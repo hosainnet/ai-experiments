@@ -1,5 +1,8 @@
 import json
 
+from skills import SkillRecord, activate_skill
+
+
 # The actual functions your tools call
 def get_weather(location: str) -> str:
     """Simulated weather lookup."""
@@ -66,4 +69,32 @@ available_functions = {
         args["value"], args["from_unit"], args["to_unit"]
     ),
 }
+
+
+def register_skill_tool(skills: dict[str, SkillRecord]) -> None:
+    """Register the activate_skill tool with discovered skill names."""
+    skill_names = list(skills.keys())
+    tools.append({
+        "type": "function",
+        "function": {
+            "name": "activate_skill",
+            "description": "Activate a skill to load specialized instructions. Use this when the user's request matches a skill's description.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "enum": skill_names,
+                        "description": "Skill to activate. Available: "
+                        + ", ".join(
+                            f"{s.name} ({s.description})" for s in skills.values()
+                        ),
+                    }
+                },
+                "required": ["name"],
+                "additionalProperties": False,
+            },
+        },
+    })
+    available_functions["activate_skill"] = lambda args: activate_skill(args["name"], skills)
 

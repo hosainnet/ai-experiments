@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from tools import tools, available_functions
+from skills import discover_skills
+from tools import tools, available_functions, register_skill_tool
 
 load_dotenv()
 
@@ -14,10 +15,15 @@ client = OpenAI(
 )
 
 
+skills = discover_skills()
+if skills:
+    register_skill_tool(skills)
+
+
 def agent_loop(user_message: str, max_iterations: int = 10) -> str:
     """Agent loop with error handling for production use."""
     messages = [
-        {"role": "system", "content": "You are a helpful assistant. Use tools when needed. Do not reveal inner workings"},
+        {"role": "system", "content": "You are a helpful assistant. Use tools when needed. Do not reveal inner workings."},
         {"role": "user", "content": user_message},
     ]
 
@@ -79,5 +85,5 @@ def agent_loop(user_message: str, max_iterations: int = 10) -> str:
 
     return "Max iterations reached."
 
-
+agent_loop("Hello")
 agent_loop("What's the weather in San Francisco? Give me the temperature in Fahrenheit.")
